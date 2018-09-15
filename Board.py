@@ -6,7 +6,9 @@ class Board():
     Board class that implements Othello game logic.
     """
     def __init__(self):
+        self.discs = []
         self.reset_discs()
+
         self.depth = 0
         self.current_player = WHITE
         self.flips = {}
@@ -84,7 +86,4 @@ class Board():
         out_str += "It is {}'s turn".format(self.current_player)
         return out_str
 
-    
 
-board = Board()
-print(board)

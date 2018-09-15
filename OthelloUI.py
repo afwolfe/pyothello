@@ -3,17 +3,21 @@ import tkinter as tk
 
 from Constants import *
 from OthelloCanvas import OthelloCanvas
+from Board import Board
 
 class OthelloUI(tk.Frame):
     def __init__(self, master=None):
         super().__init__()
         self.grid()
+
+        self.board = Board()
+
         self.create_widgets()
 
     def create_widgets(self):
         #self.menu = tk.Menu(self,)
 
-        self.game_canvas = OthelloCanvas(width=WIDTH, height=HEIGHT)
+        self.game_canvas = OthelloCanvas(self.board, width=WIDTH, height=HEIGHT)
         self.game_canvas.grid()
 
         self.quit_button = tk.Button(self, text='Quit',
