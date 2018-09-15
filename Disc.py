@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-from Constants import *
-import tkinter as tk
+from constants import *
 
 class Disc():
     def __init__(self, player=EMPTY):
