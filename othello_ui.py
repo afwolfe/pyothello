@@ -19,8 +19,8 @@ class OthelloUI(tk.Frame):
         :param master: Optionally provides a master object for the tk.Frame
         """
         super().__init__(master)
-        self.width=WIDTH
-        self.height=HEIGHT
+        self.width = WIDTH
+        self.height = HEIGHT
         self.grid()
         self.players = {}
         try:
@@ -39,40 +39,36 @@ class OthelloUI(tk.Frame):
         finally:
             self.players[BLACK] = p2.Player(BLACK)
 
+        self.master.title('Othello: {} vs. {}'.format(self.players[WHITE].name, self.players[BLACK].name))
         self.board = Board()
 
-        self.create_widgets()
-
-    def create_widgets(self):
-        """
-        Creates the widgets for the main UI frame
-
-        :return: returns nothing
-        """
-
+        #Creates OthelloCanvas
         self.game_canvas = OthelloCanvas(self, self.board, width=WIDTH, height=HEIGHT)
         self.game_canvas.grid(row=0, column=0)
 
+        # side_bar items
         self.side_bar = tk.LabelFrame(self, text="Controls:")
         self.side_bar.grid(row=0, column=1)
 
         self.reset_button = tk.Button(self.side_bar, text="Reset",
             command=self.reset_ui)
 
-        #self.reset_button.grid(row=0, column=1)
         self.reset_button.pack()
 
         self.quit_button = tk.Button(self.side_bar, text='Quit',
             command=self.quit)
-        #self.quit_button.grid(row=0, column=1)
         self.quit_button.pack()
 
+        # End side_bar
+
+        # status_bar items
         self.status = tk.StringVar()
         self.status_bar = tk.Label(self, bd=1, relief=tk.SUNKEN, anchor=tk.W,
                               textvariable=self.status,
                               font=('arial', 16, 'normal'))
         self.status.set('Status Bar')
         self.status_bar.grid(row=2)
+        # End status_bar
 
     def reset_ui(self):
         """
@@ -103,7 +99,6 @@ class OthelloUI(tk.Frame):
 if __name__ == "__main__":
     #Initialize the UI
     app = OthelloUI()
-    app.master.title('Othello')
 
     #Sets up the turn loop.
     app.after(DELAY, app.turn_loop)

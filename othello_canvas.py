@@ -69,10 +69,10 @@ class OthelloCanvas(tk.Canvas):
     def make_move(self, move):
         """
         Sends the specified move to the Board object and updates the UI accordingly
-        :param move: [row, col] sends the specified move to the board.
+        :param move: (row, col) sends the specified move to the board.
         :return: None
         """
-        if (self.board.make_move(self.board.current_player, move)):
+        if self.board.make_move(self.board.current_player, move):
             # print(self.board)
             self.master.status.set("{} | {}".format(
                 self.board.turn_string(), self.board.score_string()))

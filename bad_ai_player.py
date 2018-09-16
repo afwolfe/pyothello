@@ -25,6 +25,6 @@ class Player():
         """
         valid_moves = board.get_valid_moves(self.color)
         if len(valid_moves) > 0:
-            return valid_moves[randint(0,len(valid_moves)-1)]
+            return valid_moves[randint(0, len(valid_moves)-1)]
         else:
-            return [0,0]
+            return (0, 0)

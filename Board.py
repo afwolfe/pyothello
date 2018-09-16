@@ -29,82 +29,106 @@ class Board:
         self.scores = {WHITE: 2, BLACK: 2}
         self.depth = 0
         self.current_player = WHITE
-        self.flips = {}
+
+        # _flips is a dict that caches move calculations.
+        # get_discs_flipped and get_num_discs_flipped should be used instead of direct access.
+        self._flips = {}
+
+        # move_history holds each move as a 2D array [ [depth, player, pos], ...]
+        # where pos is a tuple of (row, col)
         self.move_history = []
 
     def reset(self):
         """
-        Resets the board by calling init again.
+        Resets the board by calling __init__ again.
         
         :return: None
         """
         self.__init__()
 
-    def update_scores(self):
+    def _update_scores(self):
         """
         Updates self.scores for each player using self.move_history to calculate the change in points.
-        Should only be called once after making a move.
+        Should only be called by make_move
 
         :return: dict self.scores {WHITE: score, BLACK: score} after updating
         """
-        change = len(self.flips[str(self.move_history[-1])])
+        change = len(self._flips[str(self.move_history[-1])])
         player = self.move_history[-1][1]
         self.scores[player] += change + 1
         self.scores[player * -1] -= change
 
         return self.scores
 
+    def get_discs_flipped(self, player, pos):
+        """
+        Given the player and the move position, returns an array of discs that would be flipped at this position.
+        Answers are cached in dict self._flips under key str([self.depth, player, pos]),
+        where depth is the depth AFTER the move
+
+        :param player: The player color from constants.
+        :param pos: The position to play from.
+        :return: array of possible moves [(row, col), ...]
+        """
+
+        discs_flipped = []
+        temp_flip = []
+        if str([self.depth + 1, player, pos]) in self._flips:
+            # If we've already calculated the flips, return them.
+            return self._flips[str([self.depth + 1, player, pos])]
+        else:
+            # We need to calculate them from scratch.
+            for d in DIRECTIONS:
+                # print("DIRECTION: ", d)
+                # print("POS: ", pos)
+                x = pos[0]
+                y = pos[1]
+                while 0 <= x < len(self.discs) and 0 <= y < len(self.discs[x]):
+                    x += d[0]
+                    y += d[1]
+                    # print('[{}][{}]'.format(x, y))
+                    try:
+                        if self.discs[x][y].player is self.current_player * -1:
+                            # print("Found a flip!")
+                            # discs_flipped += 1
+                            temp_flip.append([x, y])
+                        else:
+                            # print("End of this direction!")
+                            if self.discs[x][y].player is self.current_player:
+                                # print("End is a matching disc.")
+                                discs_flipped = discs_flipped + temp_flip
+                            temp_flip = []
+                            break
+                    except IndexError:
+                        # We reached the edge of the board.
+                        break
+
+            # Caches list of discs flipped in a dict with str([self.depth, player, pos]) as key
+            self._flips[str([self.depth + 1, player, pos])] = discs_flipped
+
+            return discs_flipped
+
     def get_num_discs_flipped(self, player, pos):
         """
         Given the player and the move position, returns how many discs would be flipped at this position.
-        Answers are cached in dict self.flips under key str([self.depth, player, pos]), where depth is the depth AFTER the move
 
         :param player: The player color from constants.
         :param pos: The position to play from.
         :return: int number of discs that would be flipped by a player at pos.
         """
-        discs_flipped = []
-        temp_flip = []
-        for d in DIRECTIONS:
-            # print("DIRECTION: ", d)
-            # print("POS: ", pos)
-            x = pos[0]
-            y = pos[1]
-            while 0 <= x < len(self.discs) and 0 <= y < len(self.discs[x]):
-                x += d[0]
-                y += d[1]
-                # print('[{}][{}]'.format(x, y))
-                try:
-                    if self.discs[x][y].player is self.current_player * -1:
-                        # print("Found a flip!")
-                        # discs_flipped += 1
-                        temp_flip.append([x, y])
-                    else:
-                        # print("End of this direction!")
-                        if self.discs[x][y].player is self.current_player:
-                            # print("End is a matching disc.")
-                            discs_flipped = discs_flipped + temp_flip
-                        temp_flip = []
-                        break
-                except IndexError:
-                    # We reached the edge of the board.
-                    break
-
-        # Caches list of discs flipped in a dict with str([self.depth, player, pos]) as key
-        self.flips[str([self.depth + 1, player, pos])] = discs_flipped
-        return len(discs_flipped)
+        return len(self.get_discs_flipped(player, pos))
 
     def get_valid_moves(self, player):
         """
         Given the current player, returns an array of valid moves.
 
         :param player: A player as specified in constants.
-        :return: an array of valid moves of the form [[row, col], ...]
+        :return: an array of valid moves of the form [(row, col), ...]
         """
         valid_moves = []
         for r in range(SIZE):
             for c in range(SIZE):
-                pos = [r, c]
+                pos = (r, c)
                 if self.is_legal_move(player, pos):
                     valid_moves.append(pos)
         return valid_moves
@@ -120,11 +144,11 @@ class Board:
 
     def make_move(self, player, pos):
         """
-        Given a player and position [row, col], attempts to move and returns True.
+        Given a player and position (row, col), attempts to move and returns True.
         If it is not a valid move, returns False.
 
         :param player: The player color from constants.
-        :param pos: The position to play from.
+        :param pos: The position to play from as tuple (row, col)
         :return: Boolean of whether or not the move succeeded
         """
         if self.is_legal_move(player, pos):
@@ -132,7 +156,7 @@ class Board:
             self.discs[pos[0]][pos[1]].player = player
             self.move_history.append([self.depth, player, pos])
 
-            for d in self.flips[str(self.move_history[-1])]:
+            for d in self.get_discs_flipped(player, pos):
                 x = d[0]
                 y = d[1]
                 self.discs[x][y].flip()
@@ -141,7 +165,7 @@ class Board:
             self.current_player = self.current_player * -1
             # if len(self.get_valid_moves(self.current_player)) is 0:
             #     self.current_player = self.current_player * -1
-            self.update_scores()
+            self._update_scores()
             return True
         else:
             # Illegal move was attempted
