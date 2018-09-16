@@ -7,15 +7,16 @@ import tkinter as tk
 from constants import *
 from othello_canvas import OthelloCanvas
 from board import Board
-from player import Player
 
 class OthelloUI(tk.Frame):
     """
     Main UI class for Othello. Contains all Tkinter elements and handles the triggering of the AI players
     """
-    def __init__(self, argv, master=None):
+    def __init__(self, master=None):
         """
-        Initializes the OthelloUI, imports specified Player files from the command line
+        Initializes the OthelloUI, imports specified Player files from the command line.
+
+        :param master: Optionally provides a master object for the tk.Frame
         """
         super().__init__(master)
         self.width=WIDTH
@@ -23,18 +24,20 @@ class OthelloUI(tk.Frame):
         self.grid()
         self.players = {}
         try:
-            p1 = importlib.import_module(argv[1])
+            p1 = importlib.import_module(sys.argv[1])
+        except (ImportError, IndexError) as e:
+            print('error importing or nothing specified for WHITE, using human_player.')
+            p1 = importlib.import_module('player')
+        finally:
             self.players[WHITE] = p1.Player(WHITE)
-        except ImportError:
-            print('error importing {}, using human_player.'.format(argv[1]))
-            self.players[WHITE] = Player(WHITE)
 
         try:
-            p2 = importlib.import_module(argv[2])
+            p2 = importlib.import_module(sys.argv[2])
+        except (ImportError, IndexError) as e:
+            print('error importing or nothing specified for BLACK, using human_player.')
+            p2 = importlib.import_module('player')
+        finally:
             self.players[BLACK] = p2.Player(BLACK)
-        except ImportError:
-            print('error importing {}, using human_player.'.format(argv[1]))
-            self.players[BLACK] = Player(BLACK)
 
         self.board = Board()
 
@@ -43,6 +46,8 @@ class OthelloUI(tk.Frame):
     def create_widgets(self):
         """
         Creates the widgets for the main UI frame
+
+        :return: returns nothing
         """
 
         self.game_canvas = OthelloCanvas(self, self.board, width=WIDTH, height=HEIGHT)
@@ -72,14 +77,19 @@ class OthelloUI(tk.Frame):
     def reset_ui(self):
         """
         Resets the game board and clears the Canvas.
+        :return: nothing
         """
+
         self.board.reset()
         self.game_canvas.reset()
 
     def turn_loop(self):
         """
         If the player isn't human, asks them to give their next move.
+
+        :return: nothing
         """
+
         current = self.board.current_player
         if self.players[current].type is "Human":
             pass
@@ -91,8 +101,11 @@ class OthelloUI(tk.Frame):
 
 
 if __name__ == "__main__":
-    app = OthelloUI(sys.argv)
+    #Initialize the UI
+    app = OthelloUI()
     app.master.title('Othello')
+
+    #Sets up the turn loop.
     app.after(DELAY, app.turn_loop)
     app.mainloop()
 

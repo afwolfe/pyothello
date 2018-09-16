@@ -8,11 +8,16 @@
 from constants import *
 from disc import Disc
 
-class Board():
+
+class Board:
     """
     Board class that implements Othello game logic.
     """
+
     def __init__(self):
+        """
+        Initializes the board by setting all of the initial values.
+        """
         self.discs = [[Disc(EMPTY) for x in range(SIZE)] for y in range(SIZE)]
 
         self.discs[3][3].player = WHITE
@@ -27,61 +32,74 @@ class Board():
         self.flips = {}
         self.move_history = []
 
-
     def reset(self):
         """
         Resets the board by calling init again.
+        
+        :return: None
         """
         self.__init__()
 
     def update_scores(self):
         """
         Updates self.scores for each player using self.move_history to calculate the change in points.
+        Should only be called once after making a move.
+
+        :return: dict self.scores {WHITE: score, BLACK: score} after updating
         """
         change = len(self.flips[str(self.move_history[-1])])
         player = self.move_history[-1][1]
         self.scores[player] += change + 1
         self.scores[player * -1] -= change
 
+        return self.scores
+
     def get_num_discs_flipped(self, player, pos):
         """
         Given the player and the move position, returns how many discs would be flipped at this position.
         Answers are cached in dict self.flips under key str([self.depth, player, pos]), where depth is the depth AFTER the move
+
+        :param player: The player color from constants.
+        :param pos: The position to play from.
+        :return: int number of discs that would be flipped by a player at pos.
         """
         discs_flipped = []
         temp_flip = []
         for d in DIRECTIONS:
-            #print("DIRECTION: ", d)
-            #print("POS: ", pos)
+            # print("DIRECTION: ", d)
+            # print("POS: ", pos)
             x = pos[0]
             y = pos[1]
             while 0 <= x < len(self.discs) and 0 <= y < len(self.discs[x]):
                 x += d[0]
                 y += d[1]
-                #print('[{}][{}]'.format(x, y))
+                # print('[{}][{}]'.format(x, y))
                 try:
                     if self.discs[x][y].player is self.current_player * -1:
-                        #print("Found a flip!")
-                        #discs_flipped += 1
+                        # print("Found a flip!")
+                        # discs_flipped += 1
                         temp_flip.append([x, y])
                     else:
-                        #print("End of this direction!")
+                        # print("End of this direction!")
                         if self.discs[x][y].player is self.current_player:
-                            #print("End is a matching disc.")
+                            # print("End is a matching disc.")
                             discs_flipped = discs_flipped + temp_flip
                         temp_flip = []
                         break
                 except IndexError:
-                    #We reached the edge of the board.
+                    # We reached the edge of the board.
                     break
-        
-        #Caches list of discs flipped in a dict with str([self.depth, player, pos]) as key
-        self.flips[str([self.depth+1, player, pos])] = discs_flipped
+
+        # Caches list of discs flipped in a dict with str([self.depth, player, pos]) as key
+        self.flips[str([self.depth + 1, player, pos])] = discs_flipped
         return len(discs_flipped)
 
     def get_valid_moves(self, player):
         """
-        Given the current player, returns an array of valid moves in the form [[row, col], ...]
+        Given the current player, returns an array of valid moves.
+
+        :param player: A player as specified in constants.
+        :return: an array of valid moves of the form [[row, col], ...]
         """
         valid_moves = []
         for r in range(SIZE):
@@ -94,6 +112,9 @@ class Board():
     def is_legal_move(self, player, pos):
         """
         Given the current player and position, returns whether or not the current move is legal.
+        :param player: The player color from constants.
+        :param pos: The position to play from.
+        :return: boolean of whether or not the current player can move here.
         """
         return (self.discs[pos[0]][pos[1]].player is EMPTY and self.get_num_discs_flipped(player, pos) > 0)
 
@@ -101,6 +122,10 @@ class Board():
         """
         Given a player and position [row, col], attempts to move and returns True.
         If it is not a valid move, returns False.
+
+        :param player: The player color from constants.
+        :param pos: The position to play from.
+        :return: Boolean of whether or not the move succeeded
         """
         if self.is_legal_move(player, pos):
             self.depth += 1
@@ -111,19 +136,20 @@ class Board():
                 x = d[0]
                 y = d[1]
                 self.discs[x][y].flip()
-            
-            #Success!
+
+            # Success!
             self.current_player = self.current_player * -1
             # if len(self.get_valid_moves(self.current_player)) is 0:
             #     self.current_player = self.current_player * -1
             self.update_scores()
             return True
         else:
-            #Illegal move was attempted
+            # Illegal move was attempted
             return False
+
     def turn_string(self):
         """
-        Returns a string saying whose turn it is.
+        :return: A string stating whose turn it is.
         """
         if self.current_player == WHITE:
             p_string = "WHITE"
@@ -133,13 +159,13 @@ class Board():
 
     def score_string(self):
         """
-        Returns a string comparing the current scores.
+        :return: A string comparing the current scores.
         """
         return "WHITE: {} | BLACK: {}".format(self.scores[WHITE], self.scores[BLACK])
 
     def __str__(self):
         """
-        String representation of the board.
+        :return: Full string representation of the board including current player and score.
         """
         out_str = "Board with depth {}:\n".format(self.depth)
         for row in self.discs:
