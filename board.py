@@ -81,6 +81,7 @@ class Board:
             for d in DIRECTIONS:
                 # print("DIRECTION: ", d)
                 # print("POS: ", pos)
+                # TODO: There seems to be some weird wrapping behavior when checking moves... Need to check the logic
                 x = pos[0]
                 y = pos[1]
                 while 0 <= x < len(self.discs) and 0 <= y < len(self.discs[x]):
