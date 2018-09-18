@@ -81,7 +81,6 @@ class Board:
             for d in DIRECTIONS:
                 # print("DIRECTION: ", d)
                 # print("POS: ", pos)
-                # TODO: There seems to be some weird wrapping behavior when checking moves... Need to check the logic
                 x = pos[0]
                 y = pos[1]
                 while 0 <= x < len(self.discs) and 0 <= y < len(self.discs[x]):
@@ -89,7 +88,8 @@ class Board:
                     y += d[1]
                     # print('[{}][{}]'.format(x, y))
                     try:
-                        if self.discs[x][y].player is self.current_player * -1:
+                        if self.discs[x][y].player is self.current_player * -1 and x is not -1 and y is not -1:
+                            # If the disc belongs to the other player and we didn't go backwards.
                             # print("Found a flip!")
                             # discs_flipped += 1
                             temp_flip.append([x, y])
@@ -141,7 +141,7 @@ class Board:
         :param pos: The position to play from.
         :return: boolean of whether or not the current player can move here.
         """
-        return (self.discs[pos[0]][pos[1]].player is EMPTY and self.get_num_discs_flipped(player, pos) > 0)
+        return self.discs[pos[0]][pos[1]].player is EMPTY and self.get_num_discs_flipped(player, pos) > 0
 
     def make_move(self, player, pos):
         """
@@ -172,6 +172,16 @@ class Board:
             # Illegal move was attempted
             return False
 
+    def board_string(self):
+        """
+        :return: A string showing B and W discs on the board.
+        """
+        board = ""
+        for row in self.discs:
+            board += "{}\n".format(row)
+
+        return board
+
     def turn_string(self):
         """
         :return: A string stating whose turn it is.
@@ -193,9 +203,7 @@ class Board:
         :return: Full string representation of the board including current player and score.
         """
         out_str = "Board with depth {}:\n".format(self.depth)
-        for row in self.discs:
-            out_str += "{}\n".format(row)
-
+        out_str += self.board_string()
         out_str += self.score_string()
         out_str += self.turn_string()
         return out_str
