@@ -20,11 +20,11 @@ class Board:
         """
         self.discs = [[Disc(EMPTY) for x in range(SIZE)] for y in range(SIZE)]
 
-        self.discs[3][3].player = WHITE
-        self.discs[4][4].player = WHITE
+        self.discs[3][3].owner = WHITE
+        self.discs[4][4].owner = WHITE
 
-        self.discs[3][4].player = BLACK
-        self.discs[4][3].player = BLACK
+        self.discs[3][4].owner = BLACK
+        self.discs[4][3].owner = BLACK
 
         self.scores = {WHITE: 2, BLACK: 2}
         self.depth = 0
@@ -88,14 +88,14 @@ class Board:
                     y += d[1]
                     # print('[{}][{}]'.format(x, y))
                     try:
-                        if self.discs[x][y].player is self.current_player * -1 and x is not -1 and y is not -1:
+                        if self.discs[x][y].owner is self.current_player * -1 and x is not -1 and y is not -1:
                             # If the disc belongs to the other player and we didn't go backwards.
                             # print("Found a flip!")
                             # discs_flipped += 1
                             temp_flip.append([x, y])
                         else:
                             # print("End of this direction!")
-                            if self.discs[x][y].player is self.current_player:
+                            if self.discs[x][y].owner is self.current_player:
                                 # print("End is a matching disc.")
                                 discs_flipped = discs_flipped + temp_flip
                             temp_flip = []
@@ -130,20 +130,23 @@ class Board:
         for r in range(SIZE):
             for c in range(SIZE):
                 pos = (r, c)
-                if self.is_legal_move(player, pos):
+                if self.is_legal_move(pos, player):
                     valid_moves.append(pos)
         return valid_moves
 
-    def is_legal_move(self, player, pos):
+    def is_legal_move(self, pos, player=None):
         """
         Given the current player and position, returns whether or not the current move is legal.
         :param player: The player color from constants.
         :param pos: The position to play from.
         :return: boolean of whether or not the current player can move here.
         """
-        return self.discs[pos[0]][pos[1]].player is EMPTY and self.get_num_discs_flipped(player, pos) > 0
+        if not player:
+            player = self.current_player
 
-    def make_move(self, player, pos):
+        return self.discs[pos[0]][pos[1]].owner is EMPTY and self.get_num_discs_flipped(player, pos) > 0
+
+    def make_move(self, pos, player=None):
         """
         Given a player and position (row, col), attempts to move and returns True.
         If it is not a valid move, returns False.
@@ -152,9 +155,16 @@ class Board:
         :param pos: The position to play from as tuple (row, col)
         :return: Boolean of whether or not the move succeeded
         """
-        if self.is_legal_move(player, pos):
+        if not player:
+            print("player not specified")
+            player = self.current_player
+
+        if not pos:
+            raise Exception("pos not specified")
+
+        if self.is_legal_move(pos, player):
             self.depth += 1
-            self.discs[pos[0]][pos[1]].player = player
+            self.discs[pos[0]][pos[1]].owner = player
             self.move_history.append([self.depth, player, pos])
 
             for d in self.get_discs_flipped(player, pos):
@@ -164,13 +174,17 @@ class Board:
 
             # Success!
             self.current_player = self.current_player * -1
-            # if len(self.get_valid_moves(self.current_player)) is 0:
-            #     self.current_player = self.current_player * -1
+            if len(self.get_valid_moves(self.current_player)) is 0:
+                self.current_player = self.current_player * -1
             self._update_scores()
             return True
         else:
             # Illegal move was attempted
             return False
+
+
+    def terminal_test(self):
+        return len(self.get_valid_moves(self.current_player)) == 0
 
     def board_string(self):
         """

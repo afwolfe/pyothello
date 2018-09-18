@@ -58,11 +58,11 @@ class OthelloCanvas(tk.Canvas):
                 x = WIDTH / SIZE * j
                 if disc.oval_id:
                     # If the disc was already drawn, just recolor it.
-                    self.itemconfig(disc.oval_id, fill=COLORS[disc.player])
-                elif disc.player is not EMPTY:
+                    self.itemconfig(disc.oval_id, fill=COLORS[disc.owner])
+                elif disc.owner is not EMPTY:
                     # elif the disc didn't already have an ID, we need to create it and save the ID.
                     disc.oval_id = self.create_oval(x + OFFSET, y + OFFSET, x + disc_width, y + disc_height,
-                                                    fill=COLORS[disc.player])
+                                                    fill=COLORS[disc.owner])
                 j += 1
             i += 1
 
@@ -72,7 +72,7 @@ class OthelloCanvas(tk.Canvas):
         :param move: (row, col) sends the specified move to the board.
         :return: None
         """
-        if self.board.make_move(self.board.current_player, move):
+        if self.board.make_move(move, self.board.current_player):
             # print(self.board)
             self.master.status.set("{} | {}".format(
                 self.board.turn_string(), self.board.score_string()))
@@ -81,7 +81,7 @@ class OthelloCanvas(tk.Canvas):
             self.master.status.set("{} | Invalid move... try again.".format(
                 self.board.turn_string()))
 
-        if len(self.board.get_valid_moves(self.board.current_player)) is 0:
+        if self.board.terminal_test():
             self.master.status.set("Game Over!!! | {}".format(self.board.score_string()))
 
     def on_click(self, event):
