@@ -156,7 +156,6 @@ class Board:
         :return: Boolean of whether or not the move succeeded
         """
         if not player:
-            print("player not specified")
             player = self.current_player
 
         if not pos:

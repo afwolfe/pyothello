@@ -4,7 +4,7 @@ SIZE = 8
 WHITE = -1
 BLACK = 1
 EMPTY = 0
-DELAY = 1000
+DELAY = 100
 
 # Each direction you can look for flips on an Othello board.
 DIRECTIONS = [

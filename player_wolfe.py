@@ -4,7 +4,7 @@
     Desc: Mr. Wolfe's player AI, uses minimax and AB pruning
     Author: Alex Wolfe
 """
-from copy import copy
+from copy import deepcopy
 
 from constants import *
 
@@ -15,54 +15,51 @@ class Player():
         self.color = color
 
     def next_move(self, board):
-        # TODO: Fix AI passing None for pos?
-        move = self.mini_max_decision(board)
+        """
+        Given a board, decides and returns the next move desired.
+        :param board: The current Othello board.
+        :return: a move as (row, col)
+        """
+        # move = self.mini_max_decision(board)
+        move = self.ab_search(board)
         print("decision:", move)
-        board.make_move(move)
+        return move
 
     def mini_max_decision(self, board):
         successors = board.get_valid_moves(board.current_player)
         self.board = board
 
         if board.current_player is BLACK:
+            #print("Playing as {}, max".format(BLACK))
             max_move = successors[0]
-            max_state = copy(board)
+            max_state = deepcopy(board)
             max_state.make_move(max_move)
             value = self.max_value(max_state)
             for move in successors:
-                temp = copy(board)
+                temp = deepcopy(board)
                 temp.make_move(move)
                 if value < self.max_value(temp):
                     max_move = move
             return max_move
         else:
             min_move = successors[0]
-            min_state = copy(board)
+            min_state = deepcopy(board)
             min_state.make_move(min_move)
             value = self.min_value(min_state)
             for move in successors:
-                temp = copy(board)
+                temp = deepcopy(board)
                 if value > self.min_value(temp):
                     min_move = move
             return min_move
 
     def cutoff_test(self, state, depth):
         if state.terminal_test() or state.depth is depth:
+            # print("reached cutoff.")
             return True
         return False
 
     def utility(self, state):
-        values = []
-        for move in state.get_valid_moves(state.current_player):
-            values.append(state.get_num_discs_flipped(state.current_player, move))
-
-        try:
-            if state.current_player is WHITE:
-                return min(values)
-            else:
-                return max(values)
-        except ValueError:
-            return 0
+        return state.scores[BLACK]-state.scores[WHITE]
 
     def max_value(self, state):
 
@@ -72,7 +69,7 @@ class Player():
             max_value = float("-inf")
             successors = state.get_valid_moves(self.color)
             for move in successors:
-                temp = copy(state)
+                temp = deepcopy(state)
                 temp.make_move(move)
                 max_value = max(self.min_value(temp), max_value)
             return max_value
@@ -84,7 +81,7 @@ class Player():
             min_value = float("inf")
             successors = state.get_valid_moves(self.color)
             for move in successors:
-                temp = copy(state)
+                temp = deepcopy(state)
                 temp.make_move(move)
                 min_value = min(self.min_value(temp), min_value)
             return min_value
@@ -95,10 +92,12 @@ class Player():
 
         if board.current_player is BLACK:
             max_move = successors[0]
-            value = self.ab_max_value(max_move, float("-inf"), float("inf"))
+            max_state = deepcopy(board)
+            max_state.make_move(max_move)
+            value = self.ab_max_value(max_state, float("-inf"), float("inf"))
 
             for move in successors:
-                temp = copy(board)
+                temp = deepcopy(board)
                 temp.make_move(move)
                 if value < self.ab_max_value(temp, float("-inf"), float("inf")):
                     max_move = move
@@ -106,9 +105,11 @@ class Player():
 
         else:
             min_move = successors[0]
-            value = self.ab_min_value(min_move, float("-inf"), float("inf"))
+            min_state = deepcopy(board)
+            min_state.make_move(min_move)
+            value = self.ab_min_value(min_state, float("-inf"), float("inf"))
             for move in successors:
-                temp = copy(board)
+                temp = deepcopy(board)
                 temp.make_move(min_move)
                 if value> self.ab_min_value(temp, float("-inf", float("inf"))):
                     min_move = move
@@ -120,7 +121,7 @@ class Player():
             max_value = float("-inf")
             successors = state.get_valid_moves(state.current_player)
             for move in successors:
-                temp = copy(state)
+                temp = deepcopy(state)
                 temp.make_move(move)
                 max_value = max(self.ab_min_value(temp, alpha, beta), max_value)
                 if max_value > beta:
@@ -136,7 +137,7 @@ class Player():
             min_value = float("inf")
             successors = state.get_valid_moves(state.current_player)
             for move in successors:
-                temp = copy(state)
+                temp = deepcopy(state)
                 temp.make_move(move)
                 min_value = min(self.ab_max_value(temp, alpha, beta), min_value)
                 if min_value < alpha:

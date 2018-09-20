@@ -72,6 +72,7 @@ class OthelloCanvas(tk.Canvas):
         :param move: (row, col) sends the specified move to the board.
         :return: None
         """
+        #print(move)
         if self.board.make_move(move, self.board.current_player):
             # print(self.board)
             self.master.status.set("{} | {}".format(
