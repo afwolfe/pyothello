@@ -22,7 +22,7 @@ class Player():
         """
         # move = self.mini_max_decision(board)
         move = self.ab_search(board)
-        print("decision:", move)
+        # print("decision:", move)
         return move
 
     def mini_max_decision(self, board):
@@ -111,8 +111,9 @@ class Player():
             for move in successors:
                 temp = deepcopy(board)
                 temp.make_move(min_move)
-                if value> self.ab_min_value(temp, float("-inf", float("inf"))):
+                if value > self.ab_min_value(temp, float("-inf"), float("inf")):
                     min_move = move
+            return min_move
 
     def ab_max_value(self, state, alpha, beta):
         if self.cutoff_test(state, self.board.depth + 3):

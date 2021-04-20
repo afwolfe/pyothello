@@ -87,7 +87,7 @@ class OthelloUI(tk.Frame):
         """
 
         current = self.board.current_player
-        if self.players[current].type is "Human":
+        if self.players[current].type == "Human":
             pass
         else:
             next_move = self.players[current].next_move(self.board)
