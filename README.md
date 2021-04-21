@@ -18,11 +18,11 @@ The project can be used as a starting point for other AIs and can even have two 
 Run `python main.py` to run the Othello game with in Human vs. Human mode.
 
 ### Playing against an AI file
-Run `python player ai_module1` to play against an AI file (do not include the `.py` file extension.)
+Run `python main.py player ai_module1` to play against an AI file (do not include the `.py` file extension.)
 The first player is always `WHITE` and the second player is always `BLACK`.
 
 ### Pitting 2 AIs against each other
-Run `python ai_module1 ai_module2`
+Run `python main.py ai_module1 ai_module2`
 
 If the program is unable to import one of the AIs for some reason, it will default to a Human player for that spot
 
